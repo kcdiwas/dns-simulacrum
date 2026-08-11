@@ -1,6 +1,9 @@
 package dnsmsg
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"errors"
+)
 
 type Header struct {
 	ID                                 uint16
@@ -109,6 +112,19 @@ func EncodeHeader(h Header) []byte {
 	return buf
 }
 
-func (h *Header) DecodeHeader(v []byte) {
+func DecodeHeader(data []byte) (Header, error) {
+	if len(data) < 12 {
+		return Header{}, errors.New("Header too short")
+	}
+
+	header := Header{}
+	header.ID = binary.BigEndian.Uint16(data[0:])
+	header.Flags = binary.BigEndian.Uint16(data[2:])
+	header.QDCount = binary.BigEndian.Uint16(data[4:])
+	header.ANCount = binary.BigEndian.Uint16(data[6:])
+	header.NSCount = binary.BigEndian.Uint16(data[8:])
+	header.ARCount = binary.BigEndian.Uint16(data[10:])
+
+	return header, nil
 
 }
